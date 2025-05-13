@@ -7,10 +7,38 @@ on:
     branches:
       - main
 
-jobs:  # Telling what jobs we need to happen
-  build:      # Specify the building name and machine
-    name: Build & Release  # you can name the build whatever you want
-    runs-on: macos-latest # here we selected macos-latest to be able to get ios build
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            name: iOS & macOS
+            build_commands: |
+              flutter build ipa --no-codesign
+              flutter build macos --release
+              cd build
+              tar -czf ios_build.tar.gz ios
+            artifacts: |
+              build/ios_build.tar.gz
+              build/macos/Build/Products/Release/*
+          - os: windows-latest
+            name: Windows
+            build_commands: |
+              flutter build windows --release
+            artifacts: |
+              build/windows/runner/Release/*
+          - os: ubuntu-latest
+            name: Android
+            build_commands: |
+              flutter build apk --release
+              flutter build appbundle
+            artifacts: |
+              build/app/outputs/flutter-apk/app-release.apk
+              build/app/outputs/bundle/release/app-release.aab
+
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.name }}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
@@ -26,31 +54,23 @@ jobs:  # Telling what jobs we need to happen
         channel: 'stable'
     - name: Install Dependencies
       run: flutter pub get
-    # Can setup keystore herer for signing android app
-    - name: Build APK
-      run: flutter build apk --release
-    - name: Build appBundle
-      run: flutter build appbundle
-    - name: Build IPA
-      run: flutter build ipa --no-codesign
-    - name: Build Windows
-      run: flutter build windows --release
-    - name: Build macOS
-      run: flutter build macos --release
-    - name: Compress Archives and IPAs
-      run: |
-        cd build
-        tar -czf ios_build.tar.gz ios
+    - name: Build
+      run: ${{ matrix.build_commands }}
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Releases
-        path: |
-          build/app/outputs/flutter-apk/app-release.apk
-          build/app/outputs/bundle/release/app-release.aab
-          build/ios_build.tar.gz
-          build/windows/runner/Release/
-          build/macos/Build/Products/Release/
+        name: ${{ matrix.name }}-builds
+        path: ${{ matrix.artifacts }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
     - name: Extract version from pubspec.yaml
       id: extract_version
       run: |
@@ -73,11 +93,6 @@ jobs:  # Telling what jobs we need to happen
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: |
-          build/app/outputs/flutter-apk/app-release.apk
-          build/app/outputs/bundle/release/app-release.aab
-          build/ios_build.tar.gz
-          build/windows/runner/Release/*
-          build/macos/Build/Products/Release/*
+        files: artifacts/**/*
         tag_name: v${{ env.VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }} 
