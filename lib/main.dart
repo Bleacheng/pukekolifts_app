@@ -67,58 +67,74 @@ class ProfilePage extends StatelessWidget {
         children: [
           Text('Settings', style: Theme.of(context).textTheme.headlineMedium),
           const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Theme',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Choose how Pukeko Lifts should look. Auto will match your system settings.',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        DropdownButton<ThemeMode>(
-                          value: currentThemeMode,
-                          items: const [
-                            DropdownMenuItem(
-                              value: ThemeMode.system,
-                              child: Text('Auto'),
-                            ),
-                            DropdownMenuItem(
-                              value: ThemeMode.light,
-                              child: Text('Light'),
-                            ),
-                            DropdownMenuItem(
-                              value: ThemeMode.dark,
-                              child: Text('Dark'),
-                            ),
-                          ],
-                          onChanged: (ThemeMode? newMode) {
-                            if (newMode != null) {
-                              setThemeMode(newMode);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          SettingsOptionWidget(
+            currentThemeMode: currentThemeMode,
+            setThemeMode: setThemeMode,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SettingsOptionWidget extends StatelessWidget {
+  const SettingsOptionWidget({
+    super.key,
+    required this.currentThemeMode,
+    required this.setThemeMode,
+  });
+
+  final ThemeMode currentThemeMode;
+  final Function(ThemeMode p1) setThemeMode;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Theme', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Choose how Pukeko Lifts should look. Auto will match your system settings.',
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  DropdownButton<ThemeMode>(
+                    value: currentThemeMode,
+                    items: const [
+                      DropdownMenuItem(
+                        value: ThemeMode.system,
+                        child: Text('Auto'),
+                      ),
+                      DropdownMenuItem(
+                        value: ThemeMode.light,
+                        child: Text('Light'),
+                      ),
+                      DropdownMenuItem(
+                        value: ThemeMode.dark,
+                        child: Text('Dark'),
+                      ),
+                    ],
+                    onChanged: (ThemeMode? newMode) {
+                      if (newMode != null) {
+                        setThemeMode(newMode);
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
