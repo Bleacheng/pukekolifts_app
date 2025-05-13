@@ -94,6 +94,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: artifacts
+    - name: List downloaded artifacts
+      run: |
+        echo "Listing all artifacts:"
+        ls -R artifacts/
     - name: Extract version from pubspec.yaml
       id: extract_version
       run: |
@@ -104,9 +108,9 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          artifacts/*-builds/release_assets/*.apk
-          artifacts/*-builds/release_assets/*.dmg
-          artifacts/*-builds/release_assets/*.zip
-          artifacts/*-builds/release_assets/*.tar.gz
+          artifacts/Android-builds/release_assets/*.apk
+          artifacts/iOS___macOS-builds/release_assets/*.dmg
+          artifacts/iOS___macOS-builds/release_assets/*.tar.gz
+          artifacts/Windows-builds/release_assets/*.zip
         tag_name: v${{ env.VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }} 
