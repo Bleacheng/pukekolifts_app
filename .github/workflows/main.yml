@@ -24,24 +24,19 @@ jobs:
               tar -czf ios_build.tar.gz ios
             artifacts: |
               build/ios_build.tar.gz
-              build/macos/Build/Products/Release/*
+              build/macos/Build/Products/Release/*.app
           - os: windows-latest
             name: Windows
             build_commands: |
               flutter build windows --release
-              dir build\windows\runner\Release
             artifacts: |
               build/windows/runner/Release/*.exe
-              build/windows/runner/Release/*.dll
-              build/windows/runner/Release/data/*
           - os: ubuntu-latest
             name: Android
             build_commands: |
               flutter build apk --release
-              flutter build appbundle
             artifacts: |
               build/app/outputs/flutter-apk/app-release.apk
-              build/app/outputs/bundle/release/app-release.aab
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -62,10 +57,6 @@ jobs:
       run: flutter pub get
     - name: Build
       run: ${{ matrix.build_commands }}
-    - name: List build directory
-      if: matrix.os == 'windows-latest'
-      run: |
-        dir build\windows\runner\Release
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -81,28 +72,12 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         path: artifacts
-    - name: List downloaded artifacts
-      run: |
-        ls -R artifacts/
     - name: Extract version from pubspec.yaml
       id: extract_version
       run: |
         version=$(grep '^version: ' pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
-        echo "VERSION=$version" >> $GITHUB_ENV
-    - name: Check if Tag Exists
-      id: check_tag
-      run: |
-        if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
-          echo "TAG_EXISTS=true" >> $GITHUB_ENV
-        else
-          echo "TAG_EXISTS=false" >> $GITHUB_ENV
-        fi
-    - name: Modify Tag
-      if: env.TAG_EXISTS == 'true'
-      id: modify_tag
-      run: |
-        new_version="${{ env.VERSION }}-build-${{ github.run_number }}"
-        echo "VERSION=$new_version" >> $GITHUB_ENV
+        timestamp=$(date +'%Y%m%d-%H%M%S')
+        echo "VERSION=${version}-${timestamp}" >> $GITHUB_ENV
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
