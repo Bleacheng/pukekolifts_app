@@ -22,22 +22,31 @@ jobs:
               flutter build macos --release
               cd build
               tar -czf ios_build.tar.gz ios
+              cd macos/Build/Products/Release
+              create-dmg pukekolifts_app.app
+              cd ../../../../..
+              mkdir -p release_assets
+              cp build/ios_build.tar.gz release_assets/
+              cp build/macos/Build/Products/Release/*.dmg release_assets/
             artifacts: |
-              build/ios_build.tar.gz
-              build/macos/Build/Products/Release/pukekolifts_app.app
+              release_assets/
           - os: windows-latest
             name: Windows
             build_commands: |
               flutter build windows --release
               dir build\windows\x64\runner\Release
+              mkdir -p release_assets
+              cp build/windows/x64/runner/Release/pukekolifts_app.exe release_assets/
             artifacts: |
-              build/windows/x64/runner/Release/pukekolifts_app.exe
+              release_assets/
           - os: ubuntu-latest
             name: Android
             build_commands: |
               flutter build apk --release
+              mkdir -p release_assets
+              cp build/app/outputs/flutter-apk/app-release.apk release_assets/
             artifacts: |
-              build/app/outputs/flutter-apk/app-release.apk
+              release_assets/
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -54,6 +63,9 @@ jobs:
       with:
         flutter-version: '3.29.3'
         channel: 'stable'
+    - name: Install create-dmg
+      if: matrix.os == 'macos-latest'
+      run: brew install create-dmg
     - name: Install Dependencies
       run: flutter pub get
     - name: Build
@@ -86,6 +98,6 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: artifacts/**/*
+        files: artifacts/*-builds/release_assets/*
         tag_name: v${{ env.VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }} 
