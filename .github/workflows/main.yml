@@ -25,31 +25,31 @@ jobs:
               cd macos/Build/Products/Release
               create-dmg --volname "Pukeko Lifts" --window-pos 200 120 --window-size 800 400 --icon-size 100 --icon "pukekolifts_app.app" 200 190 --hide-extension "pukekolifts_app.app" --app-drop-link 600 185 "pukekolifts_app.dmg" "pukekolifts_app.app"
               cd ../../../../..
-              mkdir -p ../release
-              cp build/ios_build.tar.gz ../release/
-              cp build/macos/Build/Products/Release/*.dmg ../release/
+              mkdir -p release_files
+              cp build/ios_build.tar.gz release_files/
+              cp build/macos/Build/Products/Release/*.dmg release_files/
             artifacts: |
-              ../release/
+              release_files/
           - os: windows-latest
             name: Windows
             build_commands: |
               flutter build windows --release
               dir build\windows\x64\runner\Release
-              mkdir -p ../release
+              mkdir -p release_files
               # Create a zip file containing the Windows app and its dependencies
               cd build/windows/x64/runner/Release
-              Compress-Archive -Path * -DestinationPath ../../../../../release/pukekolifts_app_windows.zip
+              Compress-Archive -Path * -DestinationPath ../../../../../release_files/pukekolifts_app_windows.zip
               cd ../../../../../..
             artifacts: |
-              ../release/
+              release_files/
           - os: ubuntu-latest
             name: Android
             build_commands: |
               flutter build apk --release
-              mkdir -p ../release
-              cp build/app/outputs/flutter-apk/app-release.apk ../release/
+              mkdir -p release_files
+              cp build/app/outputs/flutter-apk/app-release.apk release_files/
             artifacts: |
-              ../release/
+              release_files/
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -83,7 +83,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: release-files
-        path: ../release/
+        path: release_files/
 
   release:
     needs: build
@@ -93,11 +93,11 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
       with:
-        path: release
+        path: release_files
     - name: List downloaded artifacts
       run: |
         echo "Listing all artifacts:"
-        ls -R release/
+        ls -R release_files/
     - name: Extract version from pubspec.yaml
       id: extract_version
       run: |
@@ -107,6 +107,6 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: release/*
+        files: release_files/*
         tag_name: v${{ env.VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }} 
