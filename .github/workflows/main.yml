@@ -29,9 +29,9 @@ jobs:
             name: Windows
             build_commands: |
               flutter build windows --release
-              dir build\windows\runner\Release
+              dir build\windows\x64\runner\Release
             artifacts: |
-              build/windows/runner/Release/pukekolifts_app.exe
+              build/windows/x64/runner/Release/pukekolifts_app.exe
           - os: ubuntu-latest
             name: Android
             build_commands: |
@@ -61,7 +61,7 @@ jobs:
     - name: List Windows Build Directory
       if: matrix.os == 'windows-latest'
       run: |
-        dir build\windows\runner\Release
+        dir build\windows\x64\runner\Release
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
