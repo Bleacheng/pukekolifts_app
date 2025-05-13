@@ -23,7 +23,7 @@ jobs:
               cd build
               tar -czf ios_build.tar.gz ios
               cd macos/Build/Products/Release
-              create-dmg pukekolifts_app.app
+              create-dmg --volname "Pukeko Lifts" --window-pos 200 120 --window-size 800 400 --icon-size 100 --icon "pukekolifts_app.app" 200 190 --hide-extension "pukekolifts_app.app" --app-drop-link 600 185 "pukekolifts_app.dmg" "pukekolifts_app.app"
               cd ../../../../..
               mkdir -p release_assets
               cp build/ios_build.tar.gz release_assets/
@@ -65,7 +65,9 @@ jobs:
         channel: 'stable'
     - name: Install create-dmg
       if: matrix.os == 'macos-latest'
-      run: brew install create-dmg
+      run: |
+        brew install create-dmg
+        which create-dmg
     - name: Install Dependencies
       run: flutter pub get
     - name: Build
