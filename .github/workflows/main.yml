@@ -36,7 +36,10 @@ jobs:
               flutter build windows --release
               dir build\windows\x64\runner\Release
               mkdir -p release_assets
-              cp build/windows/x64/runner/Release/pukekolifts_app.exe release_assets/
+              # Create a zip file containing the Windows app and its dependencies
+              cd build/windows/x64/runner/Release
+              Compress-Archive -Path * -DestinationPath ../../../../../release_assets/pukekolifts_app_windows.zip
+              cd ../../../../../..
             artifacts: |
               release_assets/
           - os: ubuntu-latest
@@ -100,6 +103,10 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: artifacts/*-builds/release_assets/*
+        files: |
+          artifacts/*-builds/release_assets/*.apk
+          artifacts/*-builds/release_assets/*.dmg
+          artifacts/*-builds/release_assets/*.zip
+          artifacts/*-builds/release_assets/*.tar.gz
         tag_name: v${{ env.VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }} 
