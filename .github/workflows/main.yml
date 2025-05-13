@@ -24,7 +24,7 @@ jobs:
               tar -czf ios_build.tar.gz ios
             artifacts: |
               build/ios_build.tar.gz
-              build/macos/Build/Products/Release/*.app
+              build/macos/Build/Products/Release/pukekolifts_app.app
           - os: windows-latest
             name: Windows
             build_commands: |
