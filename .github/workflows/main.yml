@@ -82,7 +82,7 @@ jobs:
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: release-files
+        name: ${{ matrix.name }}-files
         path: release_files/
 
   release:
@@ -107,6 +107,6 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
-        files: release_files/*
+        files: release_files/**/*
         tag_name: v${{ env.VERSION }}
         token: ${{ secrets.GITHUB_TOKEN }} 
